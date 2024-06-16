@@ -1,0 +1,25 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: development
+namePrefix: dev-
+nameSuffix: -env
+
+resources:
+- ../../base
+
+replicas:
+- count: 6
+  name: nginx001
+
+images:
+- newName: sreeharshav/testcontainer
+  newTag: v1
+  name: my-dummy-image
+
+labels:
+  - pairs:
+      role: monitoring
+      owner: dev-java-appteam
+      environment: development
+      batch: k8sb20
+    includeSelectors: false

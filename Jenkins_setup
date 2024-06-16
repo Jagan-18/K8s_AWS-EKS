@@ -1,0 +1,87 @@
+## install java for jenkins server setuping
+- sudo apt install -y openjdk-11-jdk
+- java -version
+
+## Install Jenkins server - Ubuntu Long Term Support release
+## Referal URL - https://www.jenkins.io/doc/book/installing/linux/
+- sudo wget -O /usr/share/keyrings/jenkins-keyring.asc \
+  https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+- echo "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc]" \
+  https://pkg.jenkins.io/debian-stable binary/ | sudo tee \
+  /etc/apt/sources.list.d/jenkins.list > /dev/null
+- sudo apt-get update
+- sudo apt-get install jenkins -y
+
+
+- <IpAdress>:8080 
+
+# Inside Jenkins we need add some Plugins
+
+# Dashboard - Manage Jenkins - Plugins
+  -  # Search  Aws
+   1. Pipeline: AWS steps
+   2.  Amazon EC2
+ - # scan
+   1. Multibranch Scan webhook trigger
+
+# Add aws Credentials in jenkins server.
+
+---> Manage jenkins ---> Credentials ---> System ---> Global Credentials
+- Add Credentials
+    - AWS Credentials
+        1. scope - Global
+        2. ID  - aws-access-Creds 
+        3. Description - aws-access-Creds 
+        4. Aws access KeyID - XXXXXXXXXXXX
+        5. sceret AccessKey - XXXXXXXXXXXX
+        6. Click creat button
+  # To see the Access key and sceret key text
+      - cat .aws/Credentials
+---
+## jenkins declarative pipeline
+    ---------------------------
+# aws eks --region us-east-1 update-kubeconfig --name <cluster-name>
+- aws eks update-kubeconfig  --region us-east-1 --name k8sb20
+
+- kubectl pods -A
+
+---
+==> $ su - jenkins
+==> ssh-keygen (# It will creatting a Rsa Key pair 'public and private key')
+## Add New credentials 
+- SSH Username with private KeyID
+          1. scope - Global
+          2. ID  - github-access
+          3. Description - github-access
+          4. Username - Jenkins
+             # Enter Directly add key copy the id_rsa  Private key text and paste inside the key
+              ==> cat /var/lib/jenkins/.ssh/id_rsa
+          5. Click creat button
+
+##public key add in github repository
+==> cat /var/lib/jenkins/.ssh/id_rsa.pub  (#cope the test and pasteinside the github repo)
+
+- github repository - setting 
+                      -  deploy keys - add deploy key
+                       - Title: Jenkins@ip-###
+                        - Key - copying in the id_rsa.pub text  
+
+---
+## Open gitbash terminal
+# open the EKS-Jenkins file location
+- git init 
+- git status
+- git add . ; git commit -m "Jenkins Integration"
+- git branch
+- git branch -m master development
+- git remote add origin git@github.com:<gitaccout_name>/k8sb20-jenkins.git 
+- git push origin development
+
+---
+## Download the kustomize 
+==> $ cd /usr/local/bin/
+- wget https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv5.4.2/kustomize_v5.4.2_linux_amd64.tar.gz
+- ll 
+- tar -xzvf kustomize_v5.0.3_linux_amd64.tar.gz
+- cd ..
+- kustomize version

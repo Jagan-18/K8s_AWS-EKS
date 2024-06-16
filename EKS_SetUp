@@ -1,0 +1,94 @@
+
+
+## Creating IAM role and geving the adim access to the service
+
+
+- apt update && apt install -y unzip
+
+#Install or update the AWS CLI Ubuntu 20.0
+
+- curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+- unzip awscliv2.zip
+- sudo ./aws/install
+- aws --version 
+
+
+# In root user giving the access key, secret and region for AWS CLI 
+- aws configure
+   - aws access Key ID [None]: XXXXXXX
+   - aws secret key [None]: XXXXXX
+   - default region name [none]: us-east-1
+   - defauit output format [none]: json
+
+
+## Download Kubectl
+- curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+- sudo mv ./kubectl /usr/local/bin/kubectl
+- chmod 777 /usr/local/bin/kubectl
+- kubectl version 
+
+## Download eksctl
+- curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+- sudo mv /tmp/eksctl /usr/local/bin
+- sudo chmod 700 /usr/local/bin/eksctl
+- eksctl version
+
+
+## Eks Cluster Creating:
+
+- eksctl create cluster \
+  --name k8sb20 \
+  --version 1.26 \
+  --zones=us-east-1a,us-east-1b,us-east-1c \
+  --without-nodegroup
+
+# After install we need to check Kubeconfig file is there are not
+    - "/root/.kube/config"
+
+- export KUBECONFIG=/root/.kube/config
+- kubectl cluster info
+
+# It will crete IAM Open ID connect provider for cluster "k8sb20" in "us-east-1"
+
+- eksctl utils associate-iam-oidc-provider \
+	--region us-east-1 \
+	--cluster k8sb20 \
+	--approve
+
+## EKS Manageds Nodegroups - 'Amazon EKS managed node groups automate the provisioning and lifecycle management of nodes (Amazon EC2 instances) for Amazon EKS Kubernetes clusters.'
+
+
+# For Node Group In Public Subnet - It will create additional two work node
+- eksctl create nodegroup --cluster=k8sb20   \
+--region=us-east-1 \
+--name=k8sb20-cluster-ng-1 \
+--node-type=t3.medium \ 
+--nodes=2 \
+--nodes-min=2 \
+--nodes-max=4 \
+--node-volume-size=20 \
+--ssh-access \
+--ssh-public-key=LaptopKey \
+--managed \
+--asg-access \
+--external-dns-access \
+--full-ecr-access \
+--appmesh-access \
+--alb-ingress-access
+ 
+==> kubectl get ns
+==> kubectl get all -n kube-system
+==> kubectl get ds -n kube-system
+==> kubectl describe ds aws-node -n kube-system
+ 
+## Delete EKS cluster
+ ==> eksctl get cluster
+ ==> eksctl get nodegroup --cluster=k8sb20
+ ==> eksctl delete nodegroup --cluster=k8sb20 --name=k8sb20-cluster-ng-1
+ ==> eksctl delete cluster --name=k8sb20
+
+
+ # In aws User also we need delete - eksadm
+
+
+
